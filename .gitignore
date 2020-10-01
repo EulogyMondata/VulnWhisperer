@@ -119,4 +119,4 @@ ENV/
 #Remove config
 configs/
 frameworks.ini
-!config/frameworks_example.ini
+!configs/frameworks_example.ini
