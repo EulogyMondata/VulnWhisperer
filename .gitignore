@@ -3,7 +3,6 @@ data/
 logs/
 elk6/vulnwhisperer.ini
 resources/elk6/vulnwhisperer.ini
-configs/frameworks_example.ini
 tests/data
 
 # Byte-compiled / optimized / DLL files
@@ -119,4 +118,4 @@ ENV/
 #Remove config
 configs/
 frameworks.ini
-!configs/frameworks_example.ini
+!configs/test.ini
