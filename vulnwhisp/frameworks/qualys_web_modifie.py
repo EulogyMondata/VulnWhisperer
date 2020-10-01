@@ -15,6 +15,8 @@ import csv
 import logging
 import dateutil.parser as dp
 
+csv.field_size_limit(sys.maxsize)
+tolog = 0
 
 class qualysWhisperAPI(object):
     COUNT_WEBAPP = '/count/was/webapp'
@@ -188,7 +190,7 @@ class qualysReportFields:
         'ID',
         'QID',
         'Url',
-        'Param',
+        'Param/Cookie', # modifié
         'Function',
         'Form Entry Point',
         'Access Path',
@@ -200,16 +202,21 @@ class qualysReportFields:
         'Ignore Date',
         'Ignore User',
         'Ignore Comments',
-        'First Time Detected',
-        'Last Time Detected',
-        'Last Time Tested',
-        'Times Detected',
+        'Detection Date',
         'Payload #1',
         'Request Method #1',
         'Request URL #1',
         'Request Headers #1',
         'Response #1',
         'Evidence #1',
+        'Unique ID',
+        'Flags',
+        'Protocol',
+        'Virtual Host',
+        'IP',
+        'Port',
+        'Result',
+#        'Info#1'
     ]
 
     INFO_HEADER = [
@@ -219,12 +226,20 @@ class qualysReportFields:
         'Response #1',
         'Last Time Detected',
     ]
-    INFO_BLOCK = [
+    INFO_BLOCK = [#changé
         CATEGORIES[2],
         'ID',
         'QID',
         'Results',
         'Detection Date',
+        'Unique ID',
+        'Flags',
+        'Protocol',
+        'Virtual Host',
+        'IP',
+        'Port',
+        'Result',
+        'Info#1'
     ]
 
     QID_HEADER = [
@@ -263,21 +278,32 @@ class qualysUtils:
     ):
         temp_list = []
         max_col_count = 0
+        # print(report)
+        # print(section)
         with open(report, 'rb') as csvfile:
             q_report = csv.reader(csvfile, delimiter=',', quotechar='"')
             for line in q_report:
+ #               print(line)
                 if set(line) == set(section):
+                    print("\n\nbreak")
+                    print (line)
+                    print (section)
                     break
-
+ #           print("endloop")
             # Reads text until the end of the block:
             for line in q_report:  # This keeps reading the file
+                #print(line)
                 temp_list.append(line)
-
+                
                 if line in end:
                     break
+            print(temp_list)
             if pop_last and len(temp_list) > 1:
+ #               print("pop")
                 temp_list.pop(-1)
+ #       print (temp_list)
         return temp_list
+
 
     def iso_to_epoch(self, dt):
         return dp.parse(dt).strftime('%s')
@@ -350,7 +376,9 @@ class qualysScanReport:
     def grab_sections(self, report):
         all_dataframes = []
         dict_tracker = {}
+        # print("report" + str(report))
         with open(report, 'rb') as csvfile:
+            # print(csvfile)
             dict_tracker['WEB_SCAN_VULN_BLOCK'] = pd.DataFrame(self.utils.grab_section(report,
                                                                                        self.WEB_SCAN_VULN_BLOCK,
                                                                                        end=[
@@ -358,6 +386,8 @@ class qualysScanReport:
                                                                                            self.WEB_SCAN_INFO_BLOCK],
                                                                                        pop_last=True),
                                                                columns=self.WEB_SCAN_VULN_HEADER)
+            print("WWEBSCANVUL")
+            # print(dict_tracker['WEB_SCAN_VULN_BLOCK'])
             dict_tracker['WEB_SCAN_SENSITIVE_BLOCK'] = pd.DataFrame(self.utils.grab_section(report,
                                                                                             self.WEB_SCAN_SENSITIVE_BLOCK,
                                                                                             end=[
@@ -365,41 +395,66 @@ class qualysScanReport:
                                                                                                 self.WEB_SCAN_SENSITIVE_BLOCK],
                                                                                             pop_last=True),
                                                                 columns=self.WEB_SCAN_SENSITIVE_HEADER)
+            print("WEB_SCAN_SENSITIVE_BLOCK")
+            #print(dict_tracker['WEB_SCAN_SENSITIVE_BLOCK'])
+            print(self.WEB_SCAN_INFO_BLOCK)
+            print(self.QID_HEADER)
             dict_tracker['WEB_SCAN_INFO_BLOCK'] = pd.DataFrame(self.utils.grab_section(report,
                                                                                        self.WEB_SCAN_INFO_BLOCK,
                                                                                        end=[self.QID_HEADER],
                                                                                        pop_last=True),
                                                                 columns=self.WEB_SCAN_INFO_HEADER)
+            print(dict_tracker['WEB_SCAN_INFO_BLOCK'])
+            
+            print("WEB_SCAN_INFO_BLOCK\n\n\n\n\n\n\n\n")
+####            print(dict_tracker['WEB_SCAN_INFO_BLOCK'])
+            # input("ici")
+            #print(dict_tracker['WEB_SCAN_INFO_BLOCK'])
             dict_tracker['QID_HEADER'] = pd.DataFrame(self.utils.grab_section(report,
                                                                               self.QID_HEADER,
                                                                               end=[self.GROUP_HEADER],
                                                                               pop_last=True),
                                                                 columns=self.QID_HEADER)
+            print("QID_HEADER")
+            # print(dict_tracker['QID_HEADER'])                                                                
             dict_tracker['GROUP_HEADER'] = pd.DataFrame(self.utils.grab_section(report,
                                                                                 self.GROUP_HEADER,
                                                                                 end=[self.OWASP_HEADER],
                                                                                 pop_last=True),
                                                                 columns=self.GROUP_HEADER)
+            print("GROUP_HEADER")
+            # print(dict_tracker['GROUP_HEADER'])                                                                
             dict_tracker['OWASP_HEADER'] = pd.DataFrame(self.utils.grab_section(report,
                                                                                 self.OWASP_HEADER,
                                                                                 end=[self.WASC_HEADER],
                                                                                 pop_last=True),
                                                                 columns=self.OWASP_HEADER)
+            print("OWASP_HEADER")
+            # print(dict_tracker['OWASP_HEADER'])                                                                
             dict_tracker['WASC_HEADER'] = pd.DataFrame(self.utils.grab_section(report,
                                                                                self.WASC_HEADER, end=[['APPENDIX']],
                                                                                pop_last=True),
                                                                 columns=self.WASC_HEADER)
+            print("WASC_HEADER")
+            # print(dict_tracker['WASC_HEADER'])                                                                
 
             dict_tracker['SCAN_META'] = pd.DataFrame(self.utils.grab_section(report,
                                                                              self.SCAN_META,
                                                                              end=[self.CATEGORY_HEADER],
                                                                              pop_last=True),
                                                                 columns=self.SCAN_META)
+            print("SCAN_META")
+            # print(dict_tracker['SCAN_META'])                                                                
 
             dict_tracker['CATEGORY_HEADER'] = pd.DataFrame(self.utils.grab_section(report,
                                                                                    self.CATEGORY_HEADER),
                                                                 columns=self.CATEGORY_HEADER)
+            print("CATEGORY_HEADER")
+            # print(dict_tracker['CATEGORY_HEADER'])
+
             all_dataframes.append(dict_tracker)
+            print("all dataframes")
+            # print(all_dataframes)
 
         return all_dataframes
 
@@ -415,7 +470,8 @@ class qualysScanReport:
                               ignore_index=False)
         merged_df = pd.merge(merged_df, df_dict['QID_HEADER'], left_on='QID',
                              right_on='Id')
-
+        #print("merge1")
+        #print(merged_df)
         if 'Content' not in merged_df:
             merged_df['Content'] = ''
 
@@ -424,16 +480,19 @@ class qualysScanReport:
                               'Description', 'Impact', 'Solution', 'Url', 'Content']
 
         for col in columns_to_cleanse:
+            # print(col)
             merged_df[col] = merged_df[col].apply(self.utils.cleanser)
 
         merged_df = merged_df.drop(['QID_y', 'QID_x'], axis=1)
         merged_df = merged_df.rename(columns={'Id': 'QID'})
-
+        #print("merge2")
+        #print(merged_df)
         merged_df = merged_df.assign(**df_dict['SCAN_META'].to_dict(orient='records')[0])
 
         merged_df = pd.merge(merged_df, df_dict['CATEGORY_HEADER'], how='left', left_on=['Category', 'Severity Level'],
                              right_on=['Category', 'Severity'], suffixes=('Severity', 'CatSev'))
-
+        #print("merge3")
+        #print(merged_df)
         merged_df = merged_df.replace('N/A', '').fillna('')
 
         try:
@@ -456,11 +515,18 @@ class qualysScanReport:
     def process_data(self, path='', file_id=None, cleanup=True):
         """Downloads a file from qualys and normalizes it"""
 
-        download_file = self.download_file(path=path, file_id=file_id)
-        self.logger.info('Downloading file ID: {}'.format(file_id))
-        print("test")
-        report_data = self.grab_sections(download_file)
+        # download_file = self.download_file(path=path, file_id=file_id)
+        # #print("download file")
+        # #print(str(download_file))
+        # self.logger.info('Downloading file ID: {}'.format(file_id))
+        report_data = self.grab_sections("/opt/VulnWhisperer/data/qualys/167940.csv")
+        # report_data = self.grab_sections("/opt/VulnWhisperer/data/qualys/584455.csv")
+        # report_data = self.grab_sections(download_file)
+        #print("report_data")
+        #print(report_data)
         merged_data = self.data_normalizer(report_data)
+        # print("merge data")
+        # print(str(merged_data))
         merged_data.sort_index(axis=1, inplace=True)
 
         return merged_data

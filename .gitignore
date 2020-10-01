@@ -95,6 +95,7 @@ celerybeat-schedule
 .venv
 venv/
 ENV/
+.virtualenv
 
 # Spyder project settings
 .spyderproject
@@ -111,3 +112,11 @@ ENV/
 
 # Mac
 .DS_Store
+
+# VScode
+.vscode
+
+#Remove config
+configs/
+frameworks.ini
+!config/frameworks_example.ini
