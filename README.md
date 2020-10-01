@@ -10,6 +10,20 @@ VulnWhisperer is a vulnerability management tool and report aggregator. VulnWhis
 [![GitHub license](https://img.shields.io/github/license/HASecuritySolutions/VulnWhisperer)](https://github.com/HASecuritySolutions/VulnWhisperer/blob/master/LICENSE)
 [![Twitter](https://img.shields.io/twitter/follow/VulnWhisperer.svg?style=social&label=Follow)](https://twitter.com/VulnWhisperer)
 
+
+TO DEBUG:
+-----------------
+
+1. Have python 2 installed
+2. activate environnement : source .virtualenv/env/bin/activate
+3. Desactivate bytecode creation: export PYTHONDONTWRITEBYTECODE=1
+
+4. Play with files in :
+.virtualenv/env/lib/python2.7/site-packages/VulnWhisperer-1.8-py2.7.egg/EGG-INFO
+
+5. Run vuln_whisperer -c #configs/frameworks_example.ini#
+
+
 Currently Supports
 -----------------
 
