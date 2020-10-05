@@ -16,6 +16,8 @@ import logging
 import dateutil.parser as dp
 
 
+csv.field_size_limit(sys.maxsize)
+
 class qualysWhisperAPI(object):
     COUNT_WEBAPP = '/count/was/webapp'
     COUNT_WASSCAN = '/count/was/wasscan'
@@ -188,7 +190,7 @@ class qualysReportFields:
         'ID',
         'QID',
         'Url',
-        'Param',
+        'Param/Cookie', #changé
         'Function',
         'Form Entry Point',
         'Access Path',
@@ -210,6 +212,14 @@ class qualysReportFields:
         'Request Headers #1',
         'Response #1',
         'Evidence #1',
+        'Unique ID', # Ajout
+        'Flags',
+        'Protocol',
+        'Virtual Host',
+        'IP',
+        'Port',
+        'Result',
+        'Info#1',
     ]
 
     INFO_HEADER = [
@@ -218,6 +228,14 @@ class qualysReportFields:
         'QID',
         'Response #1',
         'Last Time Detected',
+        "Unique ID", #
+		"Flags",
+		"Protocol",
+		"Virtual Host",
+		"IP",
+		"Port",
+		"Result",
+		"Info#1",
     ]
     INFO_BLOCK = [
         CATEGORIES[2],
@@ -225,6 +243,14 @@ class qualysReportFields:
         'QID',
         'Results',
         'Detection Date',
+		"Unique ID", #
+		"Flags",
+		"Protocol",
+		"Virtual Host",
+		"IP",
+		"Port",
+		"Result",
+		"Info#1",
     ]
 
     QID_HEADER = [
@@ -271,7 +297,13 @@ class qualysUtils:
 
             # Reads text until the end of the block:
             for line in q_report:  # This keeps reading the file
-                temp_list.append(line)
+                if qualysReportFields.QID_HEADER in end:    # patch for empty web site / no vuln
+                    temp_line = line
+                    if (len(line) == 13):
+                        temp_line.append('')
+                    temp_list.append(temp_line)
+                else:
+                    temp_list.append(line)
 
                 if line in end:
                     break
@@ -448,7 +480,7 @@ class qualysScanReport:
         filename = path + str(file_id) + '.csv'
         file_out = open(filename, 'w')
         for line in report.splitlines():
-            file_out.write(line + '\n')
+            file_out.write(line.encode("ASCII", 'ignore') + '\n')
         file_out.close()
         self.logger.info('File written to {}'.format(filename))
         return filename
@@ -458,7 +490,6 @@ class qualysScanReport:
 
         download_file = self.download_file(path=path, file_id=file_id)
         self.logger.info('Downloading file ID: {}'.format(file_id))
-        print("test")
         report_data = self.grab_sections(download_file)
         merged_data = self.data_normalizer(report_data)
         merged_data.sort_index(axis=1, inplace=True)
