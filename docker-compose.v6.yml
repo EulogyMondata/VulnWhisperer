@@ -73,9 +73,11 @@ services:
                   "vuln_whisperer",
                   "-c",
                   "/opt/VulnWhisperer/vulnwhisperer.ini"
-    ]    
+    ]
     volumes:
       - ./data/:/opt/VulnWhisperer/data
+      - ./.virtualenv/env/lib/python2.7/site-packages/VulnWhisperer-1.8-py2.7.egg:/usr/local/lib/python2.7/dist-packages/VulnWhisperer-1.8-py2.7.egg
+      - ./.virtualenv/env/lib/python2.7/site-packages/qualysapi:/usr/local/lib/python2.7/dist-packages/qualysapi
       - ./resources/elk6/vulnwhisperer.ini:/opt/VulnWhisperer/vulnwhisperer.ini
     network_mode: host
 volumes:
